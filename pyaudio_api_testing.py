@@ -1,8 +1,9 @@
 import pyaudio
-import wave 
 from enum import Enum
 import numpy as np
-import matplotlib.pyplot as plt
+from PyQt5.QtWidgets import QApplication
+from GrapherTool import Plotter
+import sys
 
 class Record(Enum):
     BUFSIZE = 4096 # 4 KB
@@ -10,30 +11,6 @@ class Record(Enum):
     CHANNELS = 1
     RES = 44100 # Hz
 
-class Plotter:
-    def __init__(self):
-        fig, ax = plt.subplots(1, figsize=(20, 20))
-        x = np.arange(0, Record.BUFSIZE.value)
-        line, = ax.plot(x, x, lw=2)
-
-        ax.set_title("16 bit signed real time audio signal")
-        ax.set_ylabel("Amplitude")
-        ax.set_xlabel("Time")
-        
-        # 16 bit signed integers go from -2^15 -1 to 2^15
-        low_end = -2**15-1
-        high_end = 2**15
-        ax.set_ylim(low_end, high_end) 
-        plt.setp(ax, yticks = [low_end, low_end/2, 0, high_end/2, high_end])
-        plt.show(block = False)
-
-        self.__fig = fig
-        self.__line = line
-
-    def update_plot(self, buffer):
-        self.__line.set_ydata(buffer)
-        self.__fig.canvas.draw()
-        self.__fig.canvas.flush_events()
 
 def convert_seconds_to_frames(seconds:float) -> int:
     rate = Record.RES.value
@@ -48,7 +25,7 @@ def pyaudio_experiment(seconds:float) -> None:
         frames_per_buffer=Record.BUFSIZE.value,
         input=True
     )
-
+    app = QApplication(sys.argv)
     plot = Plotter()
 
     while True:
