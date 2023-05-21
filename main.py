@@ -7,7 +7,7 @@ from config import CONFIG
 from FFT import compute_fourier_transform
 
 def convert_seconds_to_frames(seconds:float) -> int:
-    rate = CONFIG.RES.value
+    rate = CONFIG.SAMPLE_RATE.value
     return int(rate * seconds)
 
 def pyaudio_experiment(seconds:float) -> None:
@@ -15,7 +15,7 @@ def pyaudio_experiment(seconds:float) -> None:
     stream = p.open(
         format = CONFIG.SAMPLE_TYPE.value,
         channels = CONFIG.CHANNELS.value,
-        rate=CONFIG.RES.value,
+        rate=CONFIG.SAMPLE_RATE.value,
         frames_per_buffer=CONFIG.BUFSIZE.value,
         input=True
     )
@@ -27,7 +27,10 @@ def pyaudio_experiment(seconds:float) -> None:
     while True:
         buffer = stream.read(CONFIG.BUFSIZE.value)
         numpy_buffer = np.frombuffer(buffer, dtype=np.int16)
+
+        frequencies, magnitudes = compute_fourier_transform(numpy_buffer)
         plot.update_sample_plot(numpy_buffer)
+        plot.update_fourier_plot(frequencies, magnitudes)
         
         
 

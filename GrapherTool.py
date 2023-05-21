@@ -57,8 +57,10 @@ class Plotter(QMainWindow):
         self.ax1.set_ylim(low_end, high_end)
         self.ax1.set_yticks([low_end, low_end / 2, 0, high_end / 2, high_end])
 
-        self.ax2.set_ylim(low_end, high_end)
-        self.ax2.set_yticks([low_end, low_end / 2, 0, high_end / 2, high_end])
+        high_end = 2 ** 25
+        self.ax2.set_ylim(0, high_end)
+        nticks = 10
+        self.ax2.set_yticks([(i * high_end) / nticks for i in range(nticks)])
 
         # Set dark mode color scheme
         self.figure.patch.set_facecolor(DARK_GRAY)  # Set background color
@@ -112,6 +114,7 @@ class Plotter(QMainWindow):
         self.line2.set_data(frequencies, amplitudes)
 
         self.ax2.relim()
+        self.ax2.set_xscale('log')
         self.ax2.autoscale_view(scalex=True, scaley=True)
 
         self.canvas.draw()
