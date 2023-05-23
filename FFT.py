@@ -16,3 +16,4 @@ def compute_fourier_transform(input_array: np.ndarray) -> Tuple[np.ndarray, np.n
     limit = int(fft_length/2-1)
     return (frequencies[0:limit], magnitudes[0:limit])
 
+

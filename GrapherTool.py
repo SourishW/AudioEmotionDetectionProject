@@ -5,7 +5,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 WHITE = (1.0, 1.0, 1.0)  # white
-DARK_GRAY = "#262626"
+DARK_GRAY = "#161616"
 
 
 class Plotter(QMainWindow):
@@ -27,17 +27,17 @@ class Plotter(QMainWindow):
             fontsize=12,
         )
         self.ax1.set_xlabel(
-            "Time (Samples taken at)",
+            "Time (Samples)",
             color="white",
             weight="bold",
             fontsize=12,
         )
         self.ax1.set_title(
-            "Amplitude vs Samples", color="white", weight="bold", fontsize=16
+            "Time Domain", color="white", weight="bold", fontsize=16
         )
 
         self.ax2.set_ylabel(
-            "Amplitude (Signed Integer)",
+            "Amplitude (magnitude)",
             color="white",
             weight="bold",
             fontsize=12,
@@ -49,7 +49,7 @@ class Plotter(QMainWindow):
             fontsize=12,
         )
         self.ax2.set_title(
-            "Amplitude vs Frequency", color="white", weight="bold", fontsize=16
+            "Fourier Domain", color="white", weight="bold", fontsize=16
         )
 
         low_end = -2 ** 15 - 1
@@ -57,10 +57,7 @@ class Plotter(QMainWindow):
         self.ax1.set_ylim(low_end, high_end)
         self.ax1.set_yticks([low_end, low_end / 2, 0, high_end / 2, high_end])
 
-        high_end = 2 ** 25
-        self.ax2.set_ylim(0, high_end)
-        nticks = 10
-        self.ax2.set_yticks([(i * high_end) / nticks for i in range(nticks)])
+  
 
         # Set dark mode color scheme
         self.figure.patch.set_facecolor(DARK_GRAY)  # Set background color
@@ -94,6 +91,8 @@ class Plotter(QMainWindow):
         self.line1, = self.ax1.plot([], [], lw=2)  # Line for the first plot
         self.line2, = self.ax2.plot([], [], lw=2)  # Line for the second plot
 
+        self.maxima = 0
+
         self.show()
 
     def resizeEvent(self, event: QResizeEvent):
@@ -111,8 +110,14 @@ class Plotter(QMainWindow):
         self.canvas.flush_events()
 
     def update_fourier_plot(self, frequencies, amplitudes):
+        if (np.max(amplitudes) > self.maxima):
+            self.maxima = np.max(amplitudes)/1.5
+            high_end = self.maxima
+            self.ax2.set_ylim(0, high_end)
+            nticks = 10
+            self.ax2.set_yticks([(i * high_end) / nticks for i in range(nticks)])
+        
         self.line2.set_data(frequencies, amplitudes)
-
         self.ax2.relim()
         self.ax2.set_xscale('log')
         self.ax2.autoscale_view(scalex=True, scaley=True)
