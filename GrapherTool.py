@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget
 from PyQt5.QtGui import QResizeEvent
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import random as rd
 
 WHITE = (1.0, 1.0, 1.0)  # white
 DARK_GRAY = "#161616"
@@ -19,7 +20,7 @@ class Plotter(QMainWindow):
         self.canvas = FigureCanvas(self.figure)
         self.ax1 = self.figure.add_subplot(211)  # First subplot for samples vs amplitude
         self.ax2 = self.figure.add_subplot(212)  # Second subplot for frequency vs amplitude
-
+    
         self.ax1.set_ylabel(
             "Amplitude (Signed Integer)",
             color="white",
@@ -55,8 +56,7 @@ class Plotter(QMainWindow):
         low_end = -2 ** 15 - 1
         high_end = 2 ** 15
         self.ax1.set_ylim(low_end, high_end)
-        self.ax1.set_yticks([low_end, low_end / 2, 0, high_end / 2, high_end])
-
+        self.ax1.set_yticks([low_end, low_end / 3, 0, high_end / 3, high_end])
   
 
         # Set dark mode color scheme
@@ -110,6 +110,8 @@ class Plotter(QMainWindow):
         self.canvas.flush_events()
 
     def update_fourier_plot(self, frequencies, amplitudes):
+        if rd.random()<0.05:
+            self.maxima/=2.0
         if (np.max(amplitudes) > self.maxima):
             self.maxima = np.max(amplitudes)/1.5
             high_end = self.maxima
