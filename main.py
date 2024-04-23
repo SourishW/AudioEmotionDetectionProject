@@ -12,6 +12,8 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
+FRAME_NUMBER = 25
+
 def convert_seconds_to_frames(seconds:float) -> int:
     rate = CONFIG_MIC.SAMPLE_RATE.value
     return int(rate * seconds)
@@ -52,7 +54,7 @@ def play_the_audio(file):
         rate = wf.getframerate(),
         output=True
     )
-    print(wf.getframerate())
+    print(f"Playing {file}")
 
     data = wf.readframes(chunk)
     all_data = []
@@ -62,7 +64,7 @@ def play_the_audio(file):
         all_data.append(data)
     all_data = all_data[0:40]
 
-    if len(all_data) >= 25:
+    if len(all_data) >= FRAME_NUMBER:
         
         for data in all_data:
             stream.write(data)
@@ -172,9 +174,9 @@ def files_iterator(directory):
             yield filepath
 
 def experiment_number_3():
-    emotion, the_list, labels = wav_to_emotion_freq_list("wav/15b03Lc.wav", 25) 
+    emotion, the_list, labels = wav_to_emotion_freq_list("wav/15b03Lc.wav", FRAME_NUMBER) 
     print(emotion, len(the_list))
-    emotion, the_list, labels = wav_to_emotion_freq_list("wav/03a01Wa.wav", 25) 
+    emotion, the_list, labels = wav_to_emotion_freq_list("wav/03a01Wa.wav", FRAME_NUMBER) 
     print(emotion, len(the_list))
 
 def create_dataset():
@@ -183,7 +185,7 @@ def create_dataset():
 
     per_row_data = []    
     for filename in files_iterator("./wav"):
-        emotion, frequency_magnitudes, labels = wav_to_emotion_freq_list(filename, 25)
+        emotion, frequency_magnitudes, labels = wav_to_emotion_freq_list(filename, FRAME_NUMBER)
         our_labels = labels
         if emotion is None:
             none_total += 1
@@ -204,23 +206,37 @@ def create_dataset():
     return df
 
 
+def plot_distribution(data):
 
+    # Plot the histogram
+    plt.hist(data, bins=30, density=True, alpha=0.7, color='blue') # adjust the number of bins as needed
+    plt.title('Distribution of Numbers')
+    plt.xlabel('Value')
+    plt.ylabel('Density')
+    plt.grid(True)
+    plt.show()
 
 def display_file(filename):
-    frames = 25
-    emotion, frequency_magnitudes, labels = wav_to_emotion_freq_list(filename, 25)
+    frames = FRAME_NUMBER
+    emotion, frequency_magnitudes, labels = wav_to_emotion_freq_list(filename, FRAME_NUMBER)
     # Generate some random data for demonstration
     if emotion is None:
         return
-    resized = np.resize(frequency_magnitudes, (len(frequency_magnitudes)//frames,frames)) 
-    resized = np.sqrt(resized)
+    # plot_distribution(np.sqrt(frequency_magnitudes))
+    dimensions = (len(frequency_magnitudes)//frames,frames)
+    resized = np.resize(frequency_magnitudes, dimensions ) 
+    resized = np.cbrt(resized)
     resized = resized.astype(int)
     # Display the image
     plt.imshow(resized, cmap='inferno', aspect='auto')
     plt.colorbar(label='Magnitude')
     plt.title(f'{emotion} visualization, file {filename}')
+    y_ticks = np.arange(0, dimensions[0], dimensions[0]//10)
+
+    y_labels = [labels[i][labels[i].find("freq")+4:] for i in y_ticks]  # Get labels corresponding to every 10th frame
+    plt.yticks(y_ticks, y_labels)
     plt.xlabel('Time Progresses THAT Way =>')
-    plt.ylabel('Higher Frequencies THAT Way =>')
+    plt.ylabel(' <= Higher Frequencies THAT Way')
     plt.show()
 
 def experiment_number_4():
