@@ -14,7 +14,7 @@ batch_size = 64
 def get_data(data_class='training'):
     return datagen.flow_from_directory(
         data_directory,
-        target_size=(targ_width, targ_height),
+        target_size=(targ_height, targ_width),
         batch_size=batch_size,
         class_mode='categorical',
         subset=data_class
