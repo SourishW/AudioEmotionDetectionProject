@@ -279,7 +279,52 @@ def experiment_number_5_librosa():
         img = librosa.display.specshow(mel_sgram,y_axis='linear', x_axis='time', ax = ax)
         print(img)
         ax.set_title(f"{file}, {parse_emotion(file)}")
+        
         plt.show()
+
+def generate_image_files(pad_len):
+    destination_dir = './img'
+    if not os.path.exists(destination_dir):
+        os.mkdir(destination_dir)
+    
+    for file in files_iterator('./wav'):
+        
+        samples, sample_rate = librosa.load(file, sr=None)
+        if len(samples) > pad_len:
+            diff = int(len(samples) - pad_len) + 1
+            samples = samples[int(diff / 2) : len(samples) - int(diff / 2)]
+
+        samples = librosa.util.pad_center(samples, size=pad_len)
+
+        sgram = librosa.stft(samples)
+        
+        
+        fig, ax = plt.subplots(nrows=1, ncols=1, sharex=True)
+        sgram_mag, _ = librosa.magphase(sgram)
+        
+        mel_scale_sgram = librosa.feature.melspectrogram(S=sgram_mag, sr=sample_rate)
+        mel_sgram = librosa.amplitude_to_db(mel_scale_sgram, ref=np.min)
+        img = librosa.display.specshow(mel_sgram,y_axis='linear', x_axis='time', ax = ax)
+        plt.axis('off')
+
+        file_name = file[6:-4] + '.png'
+        print(len(mel_sgram), len(mel_sgram[0]))
+        print("Writing file:", file_name)
+
+        plt.savefig('img/' + file_name, bbox_inches='tight', pad_inches=0)
+        ax.set_title(f"{file}, {parse_emotion(file)}")
+        
+
+def get_average_file_len():
+    average = 0
+    num = 0
+    for file in files_iterator('./wav'):
+        
+        samples, sample_rate = librosa.load(file, sr=None)
+
+        average += len(samples)
+        num += 1
+    return int(average / num)
         
 
 if __name__ == "__main__":
@@ -289,5 +334,7 @@ if __name__ == "__main__":
     # df = create_dataset()
     # df.to_csv("emotion_data.csv")
     # experiment_number_4()
-    experiment_number_5_librosa()
+    # experiment_number_5_librosa()
+    avg = get_average_file_len()
+    generate_image_files(avg)
     
