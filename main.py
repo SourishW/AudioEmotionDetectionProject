@@ -283,20 +283,21 @@ def experiment_number_5_librosa():
         plt.show()
 
 def generate_image_files(pad_len):
-    destination_dir = './img'
+    destination_dir = './img_unsized'
     if not os.path.exists(destination_dir):
         os.mkdir(destination_dir)
     
     for file in files_iterator('./wav'):
         
         samples, sample_rate = librosa.load(file, sr=None)
-        # '''
+        '''
         if len(samples) > pad_len:
             diff = int(len(samples) - pad_len) + 1
             samples = samples[int(diff / 2) : len(samples) - int(diff / 2)]
 
         samples = librosa.util.pad_center(samples, size=pad_len)
-        # '''
+        '''
+
         sgram = librosa.stft(samples)
         
         
@@ -312,8 +313,12 @@ def generate_image_files(pad_len):
         print(len(mel_sgram), len(mel_sgram[0]))
         print("Writing file:", file_name)
 
-        plt.savefig(destination_dir + '/' + file_name, bbox_inches='tight', pad_inches=0)
-        ax.set_title(f"{file}, {parse_emotion(file)}")
+        directory = destination_dir + '/' + parse_emotion(file_name) + '/'
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+
+        plt.savefig(directory + file_name, bbox_inches='tight', pad_inches=0)
+        
         
 
 def get_average_file_len():
