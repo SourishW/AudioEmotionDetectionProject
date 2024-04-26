@@ -11,8 +11,11 @@ import wave
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import librosa
+import librosa.display
+from scipy.io import wavfile
 
-FRAME_NUMBER = 25
+FRAME_NUMBER = 12
 
 def convert_seconds_to_frames(seconds:float) -> int:
     rate = CONFIG_MIC.SAMPLE_RATE.value
@@ -145,7 +148,7 @@ def get_framerate(wave_file):
 def wav_to_emotion_freq_list(wave_file, max_frames):
     emotion = parse_emotion(wave_file)
     
-    chunk_size = 1024
+    chunk_size = 2048
     all_data = get_audio_chunks(wave_file, chunk_size)
     
     if len(all_data) < max_frames or len(all_data[max_frames-1]) != len(all_data[0]):
@@ -225,13 +228,13 @@ def display_file(filename):
     # plot_distribution(np.sqrt(frequency_magnitudes))
     dimensions = (len(frequency_magnitudes)//frames,frames)
     resized = np.resize(frequency_magnitudes, dimensions ) 
-    resized = np.cbrt(resized)
+    resized = np.sqrt(resized)
     resized = resized.astype(int)
     # Display the image
     plt.imshow(resized, cmap='inferno', aspect='auto')
     plt.colorbar(label='Magnitude')
     plt.title(f'{emotion} visualization, file {filename}')
-    y_ticks = np.arange(0, dimensions[0], dimensions[0]//10)
+    y_ticks = np.arange(0, dimensions[0], dimensions[0]//30)
 
     y_labels = [labels[i][labels[i].find("freq")+4:] for i in y_ticks]  # Get labels corresponding to every 10th frame
     plt.yticks(y_ticks, y_labels)
@@ -244,11 +247,94 @@ def experiment_number_4():
         play_the_audio(file)
         display_file(file)
 
+def display_mel_spectogram():
+    pass
+
+def get_all_audio_samples(wave_file):
+    p = pyaudio.PyAudio()
+    chunk = 1024
+    wf = wave.open("wav/03a01Wa.wav", 'rb')
+    print(wf.getframerate())
+    data = wf.readframes(wf.getnframes())
+    wf.close()
+    return data
+
+def librosa_plot(samples, sample_rate):
+    plt.figure(figsize=(14, 5))
+    librosa.display.waveshow(samples, sr=sample_rate)
+    plt.show()
+
+def experiment_number_5_librosa():
+    for file in files_iterator('./wav'):
+        play_the_audio(file)
+        samples, sample_rate = librosa.load(file, sr=None)
+        sgram = librosa.stft(samples)
+        fig, ax = plt.subplots(nrows=1, ncols=1, sharex=True)
+        sgram_mag, _ = librosa.magphase(sgram)
+        
+        mel_scale_sgram = librosa.feature.melspectrogram(S=sgram_mag, sr=sample_rate)
+        mel_sgram = librosa.amplitude_to_db(mel_scale_sgram, ref=np.min)
+        print(mel_sgram.size)
+        print(len(mel_sgram), len(mel_sgram[0]))
+        img = librosa.display.specshow(mel_sgram,y_axis='linear', x_axis='time', ax = ax)
+        print(img)
+        ax.set_title(f"{file}, {parse_emotion(file)}")
+        
+        plt.show()
+
+def generate_image_files(pad_len):
+    destination_dir = './img'
+    if not os.path.exists(destination_dir):
+        os.mkdir(destination_dir)
+    
+    for file in files_iterator('./wav'):
+        
+        samples, sample_rate = librosa.load(file, sr=None)
+        if len(samples) > pad_len:
+            diff = int(len(samples) - pad_len) + 1
+            samples = samples[int(diff / 2) : len(samples) - int(diff / 2)]
+
+        samples = librosa.util.pad_center(samples, size=pad_len)
+
+        sgram = librosa.stft(samples)
+        
+        
+        fig, ax = plt.subplots(nrows=1, ncols=1, sharex=True)
+        sgram_mag, _ = librosa.magphase(sgram)
+        
+        mel_scale_sgram = librosa.feature.melspectrogram(S=sgram_mag, sr=sample_rate)
+        mel_sgram = librosa.amplitude_to_db(mel_scale_sgram, ref=np.min)
+        img = librosa.display.specshow(mel_sgram,y_axis='linear', x_axis='time', ax = ax)
+        plt.axis('off')
+
+        file_name = file[6:-4] + '.png'
+        print(len(mel_sgram), len(mel_sgram[0]))
+        print("Writing file:", file_name)
+
+        plt.savefig('img/' + file_name, bbox_inches='tight', pad_inches=0)
+        ax.set_title(f"{file}, {parse_emotion(file)}")
+        
+
+def get_average_file_len():
+    average = 0
+    num = 0
+    for file in files_iterator('./wav'):
+        
+        samples, sample_rate = librosa.load(file, sr=None)
+
+        average += len(samples)
+        num += 1
+    return int(average / num)
+        
+
 if __name__ == "__main__":
     # pyaudio_experiment1()
     # pyaudio_experiment2()
     # experiment_number_3()
-    # create_dataset()
-    experiment_number_4()
-    
+    # df = create_dataset()
+    # df.to_csv("emotion_data.csv")
+    # experiment_number_4()
+    # experiment_number_5_librosa()
+    avg = get_average_file_len()
+    generate_image_files(avg)
     
