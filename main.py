@@ -290,12 +290,13 @@ def generate_image_files(pad_len):
     for file in files_iterator('./wav'):
         
         samples, sample_rate = librosa.load(file, sr=None)
+        # '''
         if len(samples) > pad_len:
             diff = int(len(samples) - pad_len) + 1
             samples = samples[int(diff / 2) : len(samples) - int(diff / 2)]
 
         samples = librosa.util.pad_center(samples, size=pad_len)
-
+        # '''
         sgram = librosa.stft(samples)
         
         
@@ -311,7 +312,7 @@ def generate_image_files(pad_len):
         print(len(mel_sgram), len(mel_sgram[0]))
         print("Writing file:", file_name)
 
-        plt.savefig('img/' + file_name, bbox_inches='tight', pad_inches=0)
+        plt.savefig(destination_dir + '/' + file_name, bbox_inches='tight', pad_inches=0)
         ax.set_title(f"{file}, {parse_emotion(file)}")
         
 
