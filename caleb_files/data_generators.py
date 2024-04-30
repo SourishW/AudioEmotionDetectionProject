@@ -7,8 +7,8 @@ datagen = ImageDataGenerator(
 )
 
 data_directory = './img_unsized/'
-targ_width = 512
-targ_height = 384
+targ_width = 128
+targ_height = 128
 batch_size = 64
 
 def get_data(data_class='training'):
