@@ -11,6 +11,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, make_scorer
 from sklearn.tree import DecisionTreeClassifier
 import xgboost as xgb
+import cv2
+import matplotlib.pyplot as plt
+
 
 #RandomForestClassifier
 
@@ -302,6 +305,7 @@ def XGBoost():
     print("Test Accuracy:", test_accuracy)
 
 
+
 # Define the main method
 def main():
     
@@ -311,7 +315,9 @@ def main():
     
     #KNN()
     
-    XGBoost()               #add more models and implement new techniques to improve performance if desired
+    #XGBoost()               #add more models and implement new techniques to improve performance if desired
+    
+    make_plot()
 
 # Check if this script is being run directly
 if __name__ == "__main__":
