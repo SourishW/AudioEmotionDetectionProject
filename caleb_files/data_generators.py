@@ -19,6 +19,3 @@ def get_data(data_class='training'):
         class_mode='categorical',
         subset=data_class
     )
-
-print(get_data())
-print(get_data('validation'))
