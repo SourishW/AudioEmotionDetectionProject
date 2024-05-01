@@ -3,9 +3,14 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from PIL import Image
 import numpy as np
+import requests
+from io import BytesIO
 
 import tensorflow as tf
 from tf_keras.models import load_model
+from tf_keras.models import model_from_json
+import tempfile
+# from tf_keras.models import mo
 
 import caleb_files.data_generators as dg
 
@@ -45,7 +50,7 @@ def make_prediction(img, model):
     prediction = np.ravel(prediction)
     sorted_indices = np.argsort(prediction)
     print(prediction)
-    print(sorted_indices)
+    print(sorted_indices[::-1])
 
     
     
@@ -59,12 +64,37 @@ class_names = {v: k for k, v in class_indices.items()}
 
 print(class_names)
 
-img = audio_to_img('wav/03a01Fa.wav')
+img = audio_to_img('wav/03a01Wa.wav')
 # img2 = audio_to_img('wav/03a01Nc.wav')
-model1 = load_model("CNN_model.keras")
+
+model_url = "https://huggingface.co/umop-ap1sdn/CNN_Spectrogram_Emotion/resolve/main/CNN_model.keras"
+architecture_url = "https://huggingface.co/umop-ap1sdn/CNN_Spectrogram_Emotion/resolve/main/CNN_model.json"
+weights_url = "https://huggingface.co/umop-ap1sdn/CNN_Spectrogram_Emotion/resolve/main/CNN_model_weights.h5"
+
+model_raw = requests.get(model_url)
+
+# arch = requests.get(architecture_url)
+# weights = requests.get(weights_url)
+
+# Load the model from the response content
+# model1 = model_from_json(arch.content)
+
+
+# Load the model from the bytes
+with tempfile.NamedTemporaryFile(delete=True, suffix=".keras") as temp_file:
+    temp_file.write(model_raw.content)
+    temp_file.flush()
+    model1 = load_model(temp_file.name)
+
+# You can delete the temporary file after loading the model
+# temp_file.unlink(temp_file.name)
+# model1.load_model(BytesIO(weights.content))
+
+
+# model1 = load_model("https://huggingface.co/umop-ap1sdn/CNN_Spectrogram_Emotion/")
 model2 = load_model("CNN_model.keras")
 
-
+'''
 for layer in model1.layers:
     if isinstance(layer, tf.keras.layers.Dropout):
         layer.rate = 0.0  # Set dropout rate to 0 for inference
@@ -72,7 +102,7 @@ for layer in model1.layers:
 for layer in model2.layers:
     if isinstance(layer, tf.keras.layers.Dropout):
         layer.rate = 0.0  # Set dropout rate to 0 for inference
-
+'''
 
 # model.summary()
 

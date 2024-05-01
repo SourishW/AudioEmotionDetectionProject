@@ -117,6 +117,8 @@ __pypackages__/
 
 ## Keras model
 *.keras
+*.json
+*.h5
 
 # Celery stuff
 celerybeat-schedule
