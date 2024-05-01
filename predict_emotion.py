@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 
 import tensorflow as tf
-# from tesn.keras.models import load_model
+from tf_keras.models import load_model
 
 import caleb_files.data_generators as dg
 
@@ -60,15 +60,25 @@ class_names = {v: k for k, v in class_indices.items()}
 print(class_names)
 
 img = audio_to_img('wav/03a01Fa.wav')
-img2 = audio_to_img('wav/03a01Nc.wav')
-model = tf.keras.models.load_model("CNN_model.keras")
+# img2 = audio_to_img('wav/03a01Nc.wav')
+model1 = load_model("CNN_model.keras")
+model2 = load_model("CNN_model.keras")
 
-for layer in model.layers:
+
+for layer in model1.layers:
+    if isinstance(layer, tf.keras.layers.Dropout):
+        layer.rate = 0.0  # Set dropout rate to 0 for inference
+
+for layer in model2.layers:
     if isinstance(layer, tf.keras.layers.Dropout):
         layer.rate = 0.0  # Set dropout rate to 0 for inference
 
 
-make_prediction(img, model)
-make_prediction(img2, model)
+# model.summary()
+
+make_prediction(img, model1)
+make_prediction(img, model1)
+
+make_prediction(img, model2)
 
 
